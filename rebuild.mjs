@@ -294,6 +294,8 @@ function lineChart(id, series, opts = {}) {
 const toSeries = (rows, key) =>
   rows.map((r) => ({ t: r.date, v: r[key] ?? null }));
 
+const s = stats;
+
 const kpiDelta = (v) =>
   v == null ? "—" : `<span class="${v >= 0 ? "pos" : "neg"}">${v >= 0 ? "▲" : "▼"} ${fmtPct(v)}</span>`;
 
@@ -309,8 +311,6 @@ const summaryTable = `
     <tr><td>corr(TVL, price), daily <span class="sub">(364 samples)</span></td><td class="num">${fmtCorr(s.corrTvlPrice365d)}</td><td class="num">—</td></tr>
   </tbody>
 </table>`;
-
-const s = stats;
 
 const peakMonth = new Date(s.tvl.peakDate + "T00:00:00Z").toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 
@@ -566,3 +566,4 @@ writeFileSync(path.join(ROOT, "THESIS_DATA.md"), md);
 
 console.log("OK — wrote data/*.json, charts.html, THESIS_DATA.md");
 console.log(`   TVL latest: ${fmtUsd(s.tvl.latest)} | stables: ${fmtUsd(s.stables.latest)} | head: ${s.chainHead.blockHeight}`);
+
