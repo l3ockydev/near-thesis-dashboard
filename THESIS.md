@@ -90,6 +90,13 @@ existing landscape:
   2026 thesis that this build cannot compute for free (see "What this build cannot
   compute") and therefore does not use. Anyone with BigQuery access can extend the
   analysis via `sql/`.
+- **allo.info (Algorand)**. A full "comprehension layer" over another L1's data —
+  prominent metrics, alerts, and a paid Premium tier, with the mission statement
+  "The chain provides the proof. Allo provides the comprehension." Its existence
+  confirms demand for curated chain-level analytics (the genre is commercially viable
+  elsewhere), and its Daily-Active-Addresses/validator panels are exactly the
+  infrastructure-backed metrics this build refuses to fake. The NEAR gap it does not
+  fill: no equivalent publishes a re-runnable, zero-cost pipeline with counter-evidence.
 
 The one-sentence difference: every source above shows you numbers; this repo shows you
 numbers **and** hands you the machine that produced them.
