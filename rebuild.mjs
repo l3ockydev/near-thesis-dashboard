@@ -330,7 +330,7 @@ const chartsHtml = `
     <h2>Market cap vs TVL — the cross-check</h2>
     <p class="plain">Two real market observations: market cap (speculative value) and TVL (capital actually working in NEAR apps) — TVL/mcap today: <b>${fmtRatio(stats.tvlToMarketCap ? stats.tvlToMarketCap.latest : null)}</b>.</p>
     ${priceRaw
-      ? `<div class="dual"><div>${lineChart("mc", toSeries(rows, "marketCap"), { title: "Market cap", color: "#b48dff" })}<p class="cap">Market cap</p></div><div>${lineChart("px2", toSeries(rows, "price"), { title: "NEAR price", color: "#59d3ff" })}<p class="cap">Chain TVL (same window)</p></div></div>`
+      ? `<div class="dual"><div>${lineChart("mc", toSeries(rows, "marketCap"), { title: "Market cap", color: "#b48dff" })}<p class="cap">Market cap (last 365d)</p></div><div>${lineChart("tvl365", toSeries(rows.slice(-366), "tvl"), { title: "Chain TVL", color: "#59d3ff" })}<p class="cap">Chain TVL (last 365d)</p></div></div>`
       : `<div class="nodata"><span>Unavailable at build time.</span></div>`}
     <p class="src">Sources: <a href="https://api.coingecko.com/api/v3/coins/near/market_chart">CoinGecko</a> + DefiLlama. Daily correlation between TVL and price: <b>${fmtCorr(s.corrTvlPrice365d)}</b> over 365d — descriptive, not causal.</p>
   </section>

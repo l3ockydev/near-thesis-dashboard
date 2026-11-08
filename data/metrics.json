@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-08T18:14:10.150Z",
+  "generatedAt": "2026-11-08T18:15:40.604Z",
   "stats": {
     "tvl": {
       "latest": 174008524,
@@ -19,15 +19,15 @@
       "firstDate": "2022-07-10"
     },
     "price": {
-      "latest": 3.604864790680702,
+      "latest": 3.6052882853605075,
       "latestDate": "2026-11-08"
     },
     "marketCap": {
-      "latest": 4726573682.410136,
+      "latest": 4726491880.514437,
       "latestDate": "2026-11-08"
     },
     "tvlToMarketCap": {
-      "latest": 0.036814939466102,
+      "latest": 0.03681557662615951,
       "latestDate": "2026-11-08",
       "peak": 0.0649947591392236,
       "samples": 365
@@ -37,14 +37,14 @@
       "tvl1yChange": -0.055616871722180994,
       "stables90dChange": 0.01899252031790888
     },
-    "corrTvlPrice365d": 0.3059653123960545,
+    "corrTvlPrice365d": 0.3059653638712076,
     "corrSamples": 364,
     "chainHead": {
       "chainId": "mainnet",
-      "blockHeight": 223652504,
-      "blockTime": "2026-11-08T18:14:08.608794140Z",
+      "blockHeight": 223652663,
+      "blockTime": "2026-11-08T18:15:39.125743041Z",
       "protocolVersion": 88,
-      "fetchedAt": "2026-11-08T18:14:10.150Z"
+      "fetchedAt": "2026-11-08T18:15:40.604Z"
     }
   },
   "rows": [
@@ -9985,8 +9985,8 @@
     {
       "date": "2026-11-08",
       "tvl": 174008524,
-      "price": 3.604864790680702,
-      "marketCap": 4726573682.410136,
+      "price": 3.6052882853605075,
+      "marketCap": 4726491880.514437,
       "stables": 130472552.28
     }
   ]
