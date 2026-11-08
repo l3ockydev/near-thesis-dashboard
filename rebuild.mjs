@@ -10,6 +10,8 @@
 //   - NEAR price & market cap:  https://api.coingecko.com/api/v3/coins/near/market_chart (free, no key)
 //   - Chain liveness (head):    https://rpc.mainnet.near.org (public RPC)
 
+import { fmtUsd, fmtPct, fmtCorr, fmtRatio, toSeries, kpiDelta } from "./lib.mjs";
+
 import { writeFileSync, mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -219,22 +221,7 @@ writeFileSync(
 );
 
 // ---------- 3. Render charts.html (pure inline SVG, no CDN, offline-capable) ----
-
-const fmtUsd = (v) => {
-  if (v == null) return "n/a";
-  if (Math.abs(v) >= 1e9) return "$" + (v / 1e9).toFixed(2) + "B";
-  if (Math.abs(v) >= 1e6) return "$" + (v / 1e6).toFixed(1) + "M";
-  if (Math.abs(v) >= 1e3) return "$" + (v / 1e3).toFixed(1) + "K";
-  return "$" + v.toFixed(0);
-};
-const fmtPct = (v) => (v == null ? "n/a" : (v >= 0 ? "+" : "") + (v * 100).toFixed(1) + "%");
-const fmtCorr = (v) => (v == null ? "n/a" : v.toFixed(3));
-const fmtRatio = (v) => {
-  if (v == null) return "n/a";
-  const pctVal = v * 100;
-  const pctStr = Math.abs(pctVal) >= 10 ? pctVal.toFixed(0) + "%" : pctVal.toFixed(1) + "%";
-  return v.toFixed(3) + " (" + pctStr + ")";
-};
+// Formatting helpers live in lib.mjs (shared with the test suite).
 
 function lineChart(id, series, opts = {}) {
   const W = 760, H = 250, padL = 52, padR = 86, padT = 14, padB = 26;
@@ -291,13 +278,7 @@ function lineChart(id, series, opts = {}) {
   </figure>`;
 }
 
-const toSeries = (rows, key) =>
-  rows.map((r) => ({ t: r.date, v: r[key] ?? null }));
-
 const s = stats;
-
-const kpiDelta = (v) =>
-  v == null ? "—" : `<span class="${v >= 0 ? "pos" : "neg"}">${v >= 0 ? "▲" : "▼"} ${fmtPct(v)}</span>`;
 
 const summaryTable = `
 <table class="summary">

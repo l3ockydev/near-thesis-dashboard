@@ -22,9 +22,10 @@ Requirements: Node.js >= 18 only. There are **zero npm dependencies** — no ins
 ## How to try (judge checklist)
 
 1. Clone this repo. Run `node rebuild.mjs`. It must succeed on any network (see the degradation note below).
-2. Open `charts.html`. Note the build timestamp, chain head block, and the `data/*.json` fingerprints.
-3. Spot-check any number in `THESIS_DATA.md` against the raw JSON in `data/`.
-4. The rerun produces fresh numbers — they will not equal the committed ones in value (data moves on), and that is the point: the pipeline is the evidence, not a static screenshot.
+2. Run `node --test`. 13/13 checks must pass (formatting helpers and honest-null behavior; Node >= 18 built-in `node:test`, no dependencies).
+3. Open `charts.html`. Note the build timestamp, chain head block, and the `data/*.json` fingerprints.
+4. Spot-check any number in `THESIS_DATA.md` against the raw JSON in `data/`.
+5. The rerun produces fresh numbers — they will not equal the committed ones in value (data moves on), and that is the point: the pipeline is the evidence, not a static screenshot.
 
 ## Data sources (all free, keyless)
 
