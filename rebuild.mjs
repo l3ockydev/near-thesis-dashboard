@@ -237,55 +237,56 @@ const fmtRatio = (v) => {
 };
 
 function lineChart(id, series, opts = {}) {
-  const W = 760, H = 280, padL = 68, padR = 14, padT = 18, padB = 32;
+  const W = 760, H = 250, padL = 52, padR = 86, padT = 14, padB = 26;
   const pts = series.filter((p) => p.v != null).map((p) => ({ t: p.t, v: p.v }));
   if (pts.length < 2) {
     return `<div class="nodata"><span>No data at build time — see THESIS.md sources. Nothing is faked.</span></div>`;
   }
-  const color = opts.color || "#59d3ff";
+  const ink = opts.color || "#1a1611";
   const ymin = 0;
   const ymaxRaw = Math.max(...pts.map((p) => p.v));
-  const ymax = ymaxRaw <= 0 ? 1 : ymaxRaw * 1.08;
+  const ymax = ymaxRaw <= 0 ? 1 : ymaxRaw * 1.12;
   const t0 = new Date(pts[0].t + "T00:00:00Z").getTime();
   const t1 = new Date(pts[pts.length - 1].t + "T00:00:00Z").getTime();
   const X = (t) => padL + ((new Date(t + "T00:00:00Z").getTime() - t0) / Math.max(1, t1 - t0)) * (W - padL - padR);
   const Y = (v) => H - padB - ((v - ymin) / Math.max(1e-9, ymax)) * (H - padT - padB);
   const d = pts.map((p) => (p === pts[0] ? "M" : "L") + X(p.t).toFixed(1) + "," + Y(p.v).toFixed(1)).join(" ");
-  const area = `${d} L ${X(pts[pts.length - 1].t).toFixed(1)},${(H - padB).toFixed(1)} L ${X(pts[0].t).toFixed(1)},${(H - padB).toFixed(1)} Z`;
   const grid = [];
   const GLINES = 4;
   for (let i = 0; i <= GLINES; i++) {
     const v = (ymax * i) / GLINES;
     grid.push(
-      `<line x1="${padL}" y1="${Y(v).toFixed(1)}" x2="${W - padR}" y2="${Y(v).toFixed(1)}" stroke="rgba(148,170,200,.09)" />` +
-      `<text x="${padL - 8}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" class="tick">${fmtUsd(v)}</text>`
+      `<line x1="${padL}" y1="${Y(v).toFixed(1)}" x2="${W - padR + 10}" y2="${Y(v).toFixed(1)}" stroke="#d9d2c3" stroke-width="1" ${i === 0 ? '' : 'stroke-dasharray="1 3"'}/>` +
+      `<text x="${padL - 7}" y="${(Y(v) + 3.5).toFixed(1)}" text-anchor="end" class="tick">${fmtUsd(v)}</text>`
     );
   }
   const STEPS = 4;
   const xticks = [];
   for (let i = 0; i <= STEPS; i++) {
     const day = new Date(t0 + ((t1 - t0) * i) / STEPS).toISOString().slice(0, 10);
-    xticks.push(`<text x="${X(day).toFixed(1)}" y="${H - 9}" text-anchor="middle" class="tick">${day.slice(0, 7)}</text>`);
+    xticks.push(`<text x="${X(day).toFixed(1)}" y="${H - 8}" text-anchor="middle" class="tick">${day.slice(0, 7)}</text>`);
   }
   const last = pts[pts.length - 1];
+  const marksSvg = (opts.marks || []).map((m) => {
+    const x = X(m.t), y = Y(m.v);
+    const tx = Math.max(80, Math.min(W - 80, x));
+    return `<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${x.toFixed(1)}" y2="${(H - padB).toFixed(1)}" stroke="#b5341f" stroke-width="1" stroke-dasharray="2 3"/>
+      <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="#b5341f"/>
+      <text x="${tx.toFixed(1)}" y="${(y - 10).toFixed(1)}" text-anchor="middle" class="anno">${m.label}</text>`;
+  }).join("");
   return `<figure class="chart-wrap"
       data-pts="${encodeURIComponent(JSON.stringify(pts))}"
-      data-ymax="${ymax}" data-padl="${padL}" data-padr="${padR}" data-w="${W}" id="cw-${id}">
+      data-ymax="${ymax}" data-padl="${padL}" data-padr="${padR}" data-w="${W}" data-h="${H}" id="cw-${id}">
     <div class="tt" id="tt-${id}"></div>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${opts.title || id}" preserveAspectRatio="xMidYMid meet">
-      <defs>
-        <linearGradient id="fill-${id}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="${color}" stop-opacity=".32"/>
-          <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
       ${grid.join("")}
-      <path d="${area}" fill="url(#fill-${id})"/>
-      <path d="${d}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-      <circle cx="${X(last.t).toFixed(1)}" cy="${Y(last.v).toFixed(1)}" r="4.5" fill="${color}" class="live-dot"/>
+      <path d="${d}" fill="none" stroke="${ink}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="${X(last.t).toFixed(1)}" cy="${Y(last.v).toFixed(1)}" r="3" fill="${ink}" class="end-dot"/>
+      <text x="${(X(last.t) + 8).toFixed(1)}" y="${(Y(last.v) + 3.5).toFixed(1)}" class="end-label" fill="${ink}">${fmtUsd(last.v)}</text>
+      ${marksSvg}
       ${xticks.join("")}
-      <line x1="0" y1="${padT}" x2="0" y2="${H - padB}" class="crossline" id="cl-${id}" style="display:none"/>
-      <circle r="4" fill="${color}" class="crosspt" id="cp-${id}" style="display:none"/>
+      <line x1="0" y1="${padT}" x2="0" y2="${H - padB}" class="crossline" style="display:none"/>
+      <circle r="3.5" fill="${ink}" class="crosspt" style="display:none"/>
     </svg>
   </figure>`;
 }
@@ -293,163 +294,208 @@ function lineChart(id, series, opts = {}) {
 const toSeries = (rows, key) =>
   rows.map((r) => ({ t: r.date, v: r[key] ?? null }));
 
-const kpi = (v, sub, cls = "") =>
-  `<div class="kpi"><b class="${cls}">${v}</b><span>${sub}</span></div>`;
+const kpiDelta = (v) =>
+  v == null ? "—" : `<span class="${v >= 0 ? "pos" : "neg"}">${v >= 0 ? "▲" : "▼"} ${fmtPct(v)}</span>`;
+
+const summaryTable = `
+<table class="summary">
+  <thead><tr><th>Measure</th><th class="num">Current build</th><th class="num">Change, 90d</th></tr></thead>
+  <tbody>
+    <tr><td>Chain TVL <span class="sub">(DefiLlama)</span></td><td class="num">${fmtUsd(s.tvl.latest)}</td><td class="num">${kpiDelta(s.momentum.tvl90dChange)}</td></tr>
+    <tr><td>Stablecoins on NEAR <span class="sub">(DefiLlama)</span></td><td class="num">${fmtUsd(s.stables.latest)}</td><td class="num">${kpiDelta(s.momentum.stables90dChange)}</td></tr>
+    <tr><td>NEAR price <span class="sub">(CoinGecko, 365d)</span></td><td class="num">${s.price.latest == null ? "n/a" : "$" + s.price.latest.toFixed(2)}</td><td class="num">—</td></tr>
+    <tr><td>Market cap <span class="sub">(CoinGecko, 365d)</span></td><td class="num">${s.marketCap.latest == null ? "n/a" : fmtUsd(s.marketCap.latest)}</td><td class="num">—</td></tr>
+    <tr><td>TVL ÷ market cap <span class="sub">(365d overlap)</span></td><td class="num">${s.tvlToMarketCap ? fmtRatio(s.tvlToMarketCap.latest) : "n/a"}</td><td class="num">—</td></tr>
+    <tr><td>corr(TVL, price), daily <span class="sub">(364 samples)</span></td><td class="num">${fmtCorr(s.corrTvlPrice365d)}</td><td class="num">—</td></tr>
+  </tbody>
+</table>`;
 
 const s = stats;
 
+const peakMonth = new Date(s.tvl.peakDate + "T00:00:00Z").toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+
 const chartsHtml = `
-  <section class="card">
-    <div class="eyebrow"><span class="num">01</span>CAPITAL AT WORK</div>
-    <h2>NEAR chain TVL, full history</h2>
-    <p class="plain">Real capital deposited in NEAR applications — the simplest proxy for real demand for the chain. <b class="up" style="margin-left:12px">90d: ${fmtPct(s.momentum.tvl90dChange)}</b> <b class="down" style="margin-left:10px">vs 2022 peak: −${(s.tvl.drawdownFromPeak * 100).toFixed(1)}%</b></p>
-    ${lineChart("tvl", toSeries(rows, "tvl"), { title: "NEAR TVL", color: "#59d3ff" })}
-    <p class="src">Source: <a href="https://api.llama.fi/v2/historicalChainTvl/NEAR">DefiLlama chain TVL</a> — (c) DefiLlama, free attribution license.</p>
+  <section class="sec">
+    <div class="kick">Figure 1 · Chain TVL, 2021–present</div>
+    <h3 class="head">Momentum is back. Four years of deficit is still the burden of proof.</h3>
+    <p class="body">Total value locked — capital actively committed to NEAR applications — reads <b>${fmtUsd(s.tvl.latest)}</b>: up <b>${fmtPct(s.momentum.tvl90dChange)}</b> in 90 days, and still <b>${(s.tvl.drawdownFromPeak * 100).toFixed(1)}% below</b> the peak of May 2022. A thesis that quotes only one of the two numbers is selling something other than an analysis.</p>
+    ${lineChart("tvl", toSeries(rows, "tvl"), { title: "NEAR chain TVL", marks: [{ t: s.tvl.peakDate, v: s.tvl.peak, label: `Peak ${fmtUsd(s.tvl.peak)} · ${peakMonth}` }] })}
+    <p class="src">Source: DefiLlama chain TVL. Computed at build from data/chain_tvl.json — snapshot included in the repo.</p>
   </section>
 
-  <section class="card">
-    <div class="eyebrow"><span class="num">02</span>STICKY MONEY</div>
-    <h2>Stablecoins living on NEAR</h2>
-    <p class="plain">Dollars that stay on NEAR even when nobody is trading — slower money, arguably the stickiest demand signal.</p>
-    ${lineChart("st", toSeries(rows, "stables"), { title: "Stablecoins on NEAR", color: "#3ce5a5" })}
-    <p class="src">Source: <a href="https://stablecoins.llama.fi/stablecoincharts/NEAR">DefiLlama stablecoins per chain</a> — (c) DefiLlama.</p>
+  <section class="sec">
+    <div class="kick">Figure 2 · Stablecoins on NEAR, 2022–present</div>
+    <h3 class="head">Recorded dollars barely move. This is the weakest leg of the long case.</h3>
+    <p class="body">Stablecoin balances are demand that stays after the trading stops. The series reads <b>${fmtUsd(s.stables.latest)}</b> — changed just ${fmtPct(s.momentum.stables90dChange)} in 90 days against a longer, flatter history. It stands unexplained here on purpose; a claim cannot be bullish on autopilot.</p>
+    ${lineChart("st", toSeries(rows, "stables"), { title: "Stablecoins on NEAR" })}
+    <p class="src">Source: DefiLlama stablecoins per chain (stablecoincharts/NEAR). Note the scale: this chart is smaller than a single notch of Figure 1.</p>
   </section>
 
-  <section class="card">
-    <div class="eyebrow"><span class="num">03</span>WHAT THE MARKET PAYS</div>
-    <h2>NEAR token price — daily close, last 365d</h2>
-    <p class="plain">We compare price against usage — we never treat it as usage.</p>
+  <section class="sec">
+    <div class="kick">Figure 3 · NEAR token price, daily closes</div>
+    <h3 class="head">Price is a verdict, not evidence.</h3>
+    <p class="body">The token's daily close (${s.price.latest == null ? "unavailable at build" : "$" + s.price.latest.toFixed(2) + " at this build"}) is kept in view throughout for comparison. It is treated as an outcome to be explained — never as input of proof. Free CoinGecko data covers 365 days; that is why the paired figures below are window views, not full history.</p>
     ${priceRaw
-      ? lineChart("px", toSeries(rows, "price"), { title: "NEAR price", color: "#ffab73" })
+      ? lineChart("px", toSeries(rows, "price"), { title: "NEAR price" })
       : `<div class="nodata"><span>Price source (CoinGecko) unavailable at build time — no data, no chart.</span></div>`}
-    <p class="src">Source: <a href="https://api.coingecko.com/api/v3/coins/near/market_chart">CoinGecko free public API</a>, last 365 days.</p>
+    <p class="src">Source: CoinGecko free public API. Rate-limited; when it fails, the build degrades honestly to TVL and stablecoins only.</p>
   </section>
 
-  <section class="card">
-    <div class="eyebrow"><span class="num">04</span>VALUATION VS USAGE</div>
-    <h2>Market cap vs TVL — the cross-check</h2>
-    <p class="plain">Two real market observations: market cap (speculative value) and TVL (capital actually working in NEAR apps) — TVL/mcap today: <b>${fmtRatio(stats.tvlToMarketCap ? stats.tvlToMarketCap.latest : null)}</b>.</p>
+  <section class="sec">
+    <div class="kick">Figure 4 · Market cap and chain TVL, paired</div>
+    <h3 class="head">The long case collapses into one multiple.</h3>
+    <p class="body">Market cap is what speculation believes; TVL is what capital does. Over the ${s.tvlToMarketCap ? s.tvlToMarketCap.samples : 0}-day overlap the market pays about <b>$${s.tvlToMarketCap ? (1 / s.tvlToMarketCap.latest).toFixed(0) : "?"} of market cap per $1 of working capital</b> (TVL/MC ${s.tvlToMarketCap ? fmtRatio(s.tvlToMarketCap.latest) : "n/a"}, against a window peak of ${s.tvlToMarketCap ? fmtRatio(s.tvlToMarketCap.peak) : "n/a"}). Whether that multiple compresses or expands is the investment thesis, stated in one number.</p>
     ${priceRaw
-      ? `<div class="dual"><div>${lineChart("mc", toSeries(rows, "marketCap"), { title: "Market cap", color: "#b48dff" })}<p class="cap">Market cap (last 365d)</p></div><div>${lineChart("tvl365", toSeries(rows.slice(-366), "tvl"), { title: "Chain TVL", color: "#59d3ff" })}<p class="cap">Chain TVL (last 365d)</p></div></div>`
+      ? `<div class="duo"><div>${lineChart("mc", toSeries(rows, "marketCap"), { title: "Market cap, 365d" })}<p class="cap">Market cap</p></div><div>${lineChart("tvl365", toSeries(rows.slice(-366), "tvl"), { title: "Chain TVL, 365d" })}<p class="cap">Chain TVL, same window</p></div></div>`
       : `<div class="nodata"><span>Unavailable at build time.</span></div>`}
-    <p class="src">Sources: <a href="https://api.coingecko.com/api/v3/coins/near/market_chart">CoinGecko</a> + DefiLlama. Daily correlation between TVL and price: <b>${fmtCorr(s.corrTvlPrice365d)}</b> over 365d — descriptive, not causal.</p>
+    <p class="src">Sources: CoinGecko (market cap), DefiLlama (TVL). Daily-return correlation 365d: ${fmtCorr(s.corrTvlPrice365d)} over ${s.corrSamples} samples — descriptive, not causal.</p>
   </section>
 `;
 
 const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>NEAR Thesis Dashboard — evidence-first, re-runnable for $0</title>
+<title>NEAR Thesis Dashboard — a re-runnable long-case research note</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root {
-    --bg: #070a11; --card: rgba(21, 27, 41, .6); --border: rgba(100, 130, 180, .14);
-    --txt: #dbe4f0; --muted: #7c8aa5; --faint: #55637d;
-    --accent: #59d3ff; --spark: #3ce5a5; --warn: #ffab73; --violet: #b48dff;
+    --paper: #faf7f1;
+    --paper-2: #f3efe6;
+    --ink: #1d1811;
+    --ink-2: #4a4238;
+    --faint: #8a8172;
+    --rule: #d8d0c0;
+    --pos: #1c7a43;
+    --neg: #b0261e;
+    --red: #b5341f;
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
   body {
-    background:
-      radial-gradient(1200px 600px at 80% -10%, rgba(89, 211, 255, .08), transparent 60%),
-      radial-gradient(1000px 500px at 0% 0%, rgba(180, 141, 255, .07), transparent 60%),
-      var(--bg);
-    color: var(--txt);
-    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
-    max-width: 920px; margin: 0 auto; padding: 40px 24px 64px;
-    letter-spacing: .01em;
+    margin: 0; padding: 44px 24px 60px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-size: 15px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
   }
-  a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+  .sheet { max-width: 880px; margin: 0 auto; }
+  a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--rule); }
+  a:hover { text-decoration-color: var(--ink); }
+  code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .86em;
+    background: var(--paper-2); padding: 1px 6px; border-radius: 3px; }
 
-  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; align-items: center; }
-  .badge {
-    font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--accent); border: 1px solid rgba(89, 211, 255, .3);
-    padding: 5px 12px; border-radius: 999px; background: rgba(89, 211, 255, .06);
+  /* ── Masthead ────────────────────────────── */
+  .kicker {
+    font-size: 11.5px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--ink-2); font-weight: 700; padding-bottom: 12px;
+    border-bottom: 3px double var(--rule);
   }
-  .badge.green { color: var(--spark); border-color: rgba(60, 229, 165, .3); background: rgba(60, 229, 165, .06);
-    display: inline-flex; gap: 7px; align-items: center; }
-  .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--spark);
-    box-shadow: 0 0 0 0 rgba(60, 229, 165, .7); animation: pulse 2s infinite; }
-  @keyframes pulse { 70% { box-shadow: 0 0 0 7px rgba(60, 229, 165, 0); } 100% { box-shadow: 0 0 0 0 rgba(60, 229, 165, 0); } }
-
-  h1 { font-size: clamp(26px, 5vw, 38px); line-height: 1.15; margin: 0 0 14px; font-weight: 800; }
-  h1 em {
-    font-style: normal;
-    background: linear-gradient(92deg, #59d3ff, #b48dff 60%, #3ce5a5);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
+  .kicker .rt { float: right; letter-spacing: .08em; color: var(--faint); font-weight: 400; }
+  h1 { font-size: clamp(30px, 5.4vw, 44px); line-height: 1.12; margin: 22px 0 14px; font-weight: 400; letter-spacing: -.01em; }
+  h1 i { font-style: italic; }
+  .dateline {
+    display: flex; flex-wrap: wrap; gap: 4px 18px;
+    font-size: 12px; color: var(--ink-2);
+    border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule);
+    padding: 9px 0; margin-bottom: 26px; letter-spacing: .02em;
   }
-  .lede { color: var(--muted); font-size: 15.5px; line-height: 1.65; max-width: 68ch; margin: 0 0 26px; }
-  .lede b { color: var(--txt); font-weight: 600; }
+  .dateline b { color: var(--ink); font-weight: 700; }
+  .live { color: var(--pos); }
+  .live::before { content: "●"; font-size: 8px; vertical-align: 2px; margin-right: 5px; }
 
-  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 30px; }
-  .kpi {
-    display: flex; flex-direction: column; gap: 3px;
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 16px 18px 13px;
-    backdrop-filter: blur(8px);
+  /* ── Summary table ────────────────────────── */
+  table.summary { width: 100%; border-collapse: collapse; margin: 0 0 34px; font-size: 14px; }
+  table.summary thead th {
+    text-align: left; font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-2); font-weight: 700;
+    border-top: 2px solid var(--ink); border-bottom: 1px solid var(--ink);
+    padding: 9px 0 7px;
   }
-  .kpi b { font-size: 22px; font-weight: 750; color: #fff; font-variant-numeric: tabular-nums; }
-  .kpi b.up { color: var(--spark); } .kpi b.down { color: #ff8a6b; }
-  .kpi span { color: var(--faint); font-size: 12px; line-height: 1.35; }
+  table.summary td { padding: 9px 0; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+  table.summary tbody tr:last-child td { border-bottom: 2px solid var(--ink); }
+  .num, th.num { text-align: right; font-variant-numeric: tabular-nums;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px; }
+  .sub { color: var(--faint); font-size: 12px; font-style: italic; }
+  .pos { color: var(--pos); } .neg { color: var(--neg); }
+  .tbl-cap { font-size: 12.5px; color: var(--ink-2); margin: -26px 0 34px; }
+  .tbl-cap b { font-weight: 700; }
 
-  .card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 18px;
-    padding: 22px 24px 16px; margin: 18px 0;
-    backdrop-filter: blur(8px);
+  /* ── Figures ──────────────────────────────── */
+  .sec { margin: 44px 0 8px; padding-top: 20px; border-top: 1px solid var(--rule); page-break-inside: avoid; }
+  .kick {
+    position: relative; display: block;
+    font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--faint); font-weight: 700; padding-top: 12px; margin-bottom: 4px;
   }
-  .eyebrow { font-size: 10.5px; letter-spacing: .18em; color: var(--accent); display: flex; gap: 10px; align-items: center; margin-bottom: 8px; font-weight: 700; }
-  .eyebrow .num { color: var(--faint); font-weight: 600; }
-  .card h2 { font-size: 18px; margin: 0 0 6px; font-weight: 700; }
-  .plain { color: var(--muted); font-size: 13.5px; line-height: 1.55; margin: 0 0 8px; }
-  .plain b.up { color: var(--spark); font-variant-numeric: tabular-nums; }
-  .plain b.down { color: #ff8a6b; font-variant-numeric: tabular-nums; }
-  .src { color: var(--faint); font-size: 11.5px; margin: 6px 0 0; }
-  .cap { text-align: center; color: var(--faint); font-size: 11px; margin: -4px 0 12px; }
+  .kick::before { content: ""; position: absolute; top: 0; left: 0; width: 36px; height: 3px; background: var(--red); }
+  .head { font-size: clamp(19px, 3vw, 23px); line-height: 1.3; margin: 6px 0 10px; font-weight: 700; letter-spacing: -0.005em; }
+  .body { margin: 0 0 14px; color: var(--ink-2); max-width: 70ch; }
+  .body b { color: var(--ink); }
+  .src { font-size: 11.5px; color: var(--faint); font-style: italic; margin: 8px 0 0; }
 
-  .chart-wrap { position: relative; margin: 6px 0 0; }
+  .chart-wrap { position: relative; margin: 10px 0 0; }
   .chart-wrap svg { width: 100%; height: auto; display: block; }
-  .tick { fill: #66779a; font-size: 10.5px; font-family: inherit; }
-  .live-dot { filter: drop-shadow(0 0 6px currentColor); }
-  .crossline { stroke: rgba(190, 220, 255, .35); stroke-dasharray: 3 4; }
-  .crosspt { stroke: #070a11; stroke-width: 2; }
+  .tick { fill: var(--faint); font-size: 10.5px; font-family: ui-monospace, Menlo, monospace; }
+  .end-label { font-size: 11.5px; font-weight: 700; font-family: ui-monospace, Menlo, monospace; }
+  .anno { fill: var(--red); font-size: 11px; font-style: italic; font-family: Georgia, serif; }
+  .end-dot { }
+  .crossline { stroke: var(--ink-2); stroke-dasharray: 2 3; stroke-width: 1; }
+  .crosspt { stroke: var(--paper); stroke-width: 1.5; }
   .tt {
     position: absolute; pointer-events: none; display: none;
-    background: rgba(10, 14, 22, .92); border: 1px solid rgba(120, 150, 200, .25);
-    color: #e7eef8; font-size: 12px; padding: 6px 9px; border-radius: 8px;
-    white-space: nowrap; transform: translate(-50%, -115%); z-index: 5;
-    font-variant-numeric: tabular-nums; box-shadow: 0 4px 18px rgba(0,0,0,.45);
+    background: #fffdf9; border: 1px solid var(--rule); border-color: var(--ink-2);
+    color: var(--ink); font-size: 12px; padding: 5px 9px; border-radius: 2px;
+    white-space: nowrap; transform: translate(-50%, -130%); z-index: 5;
+    font-family: ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums;
+    box-shadow: 2px 2px 0 rgba(29, 24, 17, .15);
   }
-  .tt b { font-weight: 700; }
-  .nodata { padding: 24px 0; color: var(--faint); font-size: 13px; }
-  .dual { display: flex; flex-wrap: wrap; gap: 6px; } .dual > div { flex: 1 1 320px; min-width: 0; }
+  .nodata { padding: 20px 0; color: var(--faint); font-style: italic; }
+  .duo { display: flex; flex-wrap: wrap; gap: 0 22px; } .duo > div { flex: 1 1 320px; min-width: 0; }
+  .cap { text-align: center; color: var(--faint); font-size: 11px; font-style: italic; margin: 2px 0 8px; }
 
-  footer { margin-top: 34px; color: var(--faint); font-size: 12px; line-height: 1.7;
-    border-top: 1px solid var(--border); padding-top: 18px; }
-  footer code { background: rgba(89,211,255,.08); padding: 2px 6px; border-radius: 5px; color: var(--accent); font-size: 11px;}
-  .mit { text-align: center; color: #414d66; font-size: 11px; margin-top: 14px; }
+  /* ── Colophon ─────────────────────────────── */
+  .colophon {
+    margin-top: 52px; border-top: 3px double var(--rule); border-bottom: 3px double var(--rule);
+    padding: 16px 0 14px; font-size: 12.5px; color: var(--ink-2); line-height: 1.75;
+  }
+  .colophon b { color: var(--ink); }
+  .fin { text-align: center; margin: 18px 0 0; color: var(--faint); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+
+  .lede::first-letter {
+    font-size: 3.1em; line-height: .86; float: left;
+    padding: 2px 10px 0 0; font-weight: 700; color: var(--ink);
+  }
+
+  @media print {
+    body { padding: 0; background: #fff; }
+    .tt, script { display: none !important; }
+    .sec, table.summary, .colophon { page-break-inside: avoid; }
+  }
 </style></head><body>
+<div class="sheet">
 
-<div class="badges">
-  <span class="badge">NEAR HACKATHON</span>
-  <span class="badge" style="color:var(--violet); border-color:rgba(180,141,255,.3); background:rgba(180,141,255,.06)">TRACK · THESIS</span>
-  <span class="badge green"><span class="pulse"></span>LIVE · mainnet block ${s.chainHead.blockHeight.toLocaleString("en-US")}</span>
+  <div class="kicker">NEAR Thesis Dashboard<span class="rt">Hackathon Research Note</span></div>
+  <h1>The long case for NEAR, <i>in figures anyone can rebuild.</i></h1>
+  <div class="dateline">
+    <span><b>Build</b> ${new Date().toISOString().slice(0, 10)} ${new Date().toISOString().slice(11, 16)} UTC</span>
+    <span><b>Chain</b> <span class="live">mainnet block ${s.chainHead.blockHeight.toLocaleString("en-US")}</span></span>
+    <span><b>Re-run</b> <code>node rebuild.mjs</code> — $0, no keys, no deps</span>
+    <span><b>Track</b> thesis</span>
+  </div>
+
+  <p class="body lede" style="font-size:16px; color:var(--ink)">An investment thesis is only as good as its evidence. This note tests one claim about NEAR — <i>that growth in real onchain capital tells a story the token price alone does not</i> — using public data only, in a pipeline that rebuilds every figure below on demand. The claim, the counter-evidence, and what would falsify it are stated plainly in <a href="https://github.com/l3ockydev/near-thesis-dashboard/blob/master/THESIS.md">THESIS.md</a>.</p>
+
+  ${summaryTable}
+  <p class="tbl-cap"><b>Table 1</b> — All values computed at this build from raw snapshots in <code>data/*.json</code>; nothing hand-edited, nothing invented.</p>
+
+  ${chartsHtml}
+
+  <div class="colophon">
+    <b>Method.</b> One command — <code>node rebuild.mjs</code> — refetches every series and re-renders all figures above: DefiLlama for chain TVL and NEAR stablecoins, CoinGecko free tier for price and market cap (365-day window), NEAR public mainnet RPC for the liveness check. Metrics that genuinely cannot be computed for zero cost — daily active accounts, per-contract usage, Intents swap volume — are not substituted with estimates; the corresponding BigQuery SQL ships in <a href="https://github.com/l3ockydev/near-thesis-dashboard/tree/master/sql">sql/</a> so anyone can produce them. <b>Caveats.</b> Correlation is not causation; TVL methodology is DefiLlama's, not this note's; CoinGecko's free window is 365 days. See README "Methodology notes" for the data-quality bug found and documented mid-build.
+    <div class="fin">Built at NEAR Hackathon 2026 · MIT · github.com/l3ockydev/near-thesis-dashboard</div>
+  </div>
+
 </div>
-
-<h1>The long-term case for NEAR — in <em>numbers anyone can re-run</em></h1>
-<p class="lede">Most investment theses are vibes. This one is a <b>single command</b>: <code style="background:rgba(89,211,255,.08);padding:2px 7px;border-radius:6px;color:var(--accent);font-size:13px">node rebuild.mjs</code> rebuilds every chart on this page from raw public data — <b>$0, zero API keys, zero dependencies</b>. When the data moves, so do these charts. The claim — does growth of real onchain capital (TVL, stablecoins) tell a story the token price alone doesn't? — plus the evidence <b>against</b> it, lives in THESIS.md.</p>
-
-<div class="kpis">
-  ${kpi(fmtUsd(s.tvl.latest), `chain TVL, as of ${s.tvl.latestDate}`)}
-  ${kpi(fmtPct(s.momentum.tvl90dChange), `TVL change, 90 days`, s.momentum.tvl90dChange >= 0 ? "up" : "down")}
-  ${kpi(fmtUsd(s.stables.latest), `stablecoins on NEAR, ${s.stables.latestDate}`)}
-  ${kpi(fmtCorr(s.corrTvlPrice365d), `corr(TVL%, price%), 365d — 364 samples`, s.corrTvlPrice365d >= 0 ? "up" : "down")}
-  ${kpi(fmtRatio(s.tvlToMarketCap ? s.tvlToMarketCap.latest : null).split(" (")[0], `TVL / market cap (${s.tvlToMarketCap ? s.tvlToMarketCap.latestDate : "n/a"})`)}
-</div>
-${chartsHtml}
-<footer>
-  <b>How to re-run (what the judges did):</b> clone the repo → <code>node rebuild.mjs</code> → fresh numbers in ~10 seconds. Raw snapshots live in <code>data/*.json</code>, every KPI table in <code>THESIS_DATA.md</code>, the falsifiable claim in <code>THESIS.md</code>, and BigQuery queries for the metrics we deliberately do not fake in <code>sql/</code>. Data sources: DefiLlama (TVL, stablecoins), CoinGecko (free tier, 365d), NEAR public RPC (liveness). What cannot be computed from these sources is written down, never invented.<br>
-  <span class="mit">Built at NEAR HACKATHON 2026 · track: thesis · MIT license · repo: github.com/l3ockydev/near-thesis-dashboard</span>
-</footer>
 
 <script>
 (() => {
@@ -458,8 +504,8 @@ ${chartsHtml}
     const pts = JSON.parse(decodeURIComponent(f.dataset.pts));
     if (!pts || pts.length < 2) return;
     const svg = f.querySelector("svg"), tt = f.querySelector(".tt");
-    const W = +f.dataset.w, padL = +f.dataset.padl, padR = +f.dataset.padr, ymax = +f.dataset.ymax;
-    const H = 280, padT = 18, padB = 32;
+    const W = +f.dataset.w, H = +f.dataset.h, padL = +f.dataset.padl, padR = +f.dataset.padr, ymax = +f.dataset.ymax;
+    const padT = 14, padB = 26;
     const t0 = new Date(pts[0].t + "T00:00:00Z").getTime();
     const t1 = new Date(pts[pts.length - 1].t + "T00:00:00Z").getTime();
     const line = svg.querySelector(".crossline"), dot = svg.querySelector(".crosspt");
@@ -478,10 +524,10 @@ ${chartsHtml}
       line.setAttribute("x1", x); line.setAttribute("x2", x);
       dot.setAttribute("cx", x); dot.setAttribute("cy", y);
       line.style.display = dot.style.display = "block";
-      const px = (x / W) * r.width;
+      const px = (x / W) * r.width, py = (y / H) * r.height;
       tt.style.display = "block";
-      tt.style.left = Math.max(52, Math.min(r.width - 52, px)) + "px";
-      tt.style.top = Math.max(30, (y / H) * r.height) + "px";
+      tt.style.left = Math.max(55, Math.min(r.width - 55, px)) + "px";
+      tt.style.top = Math.max(28, py) + "px";
       tt.innerHTML = "<b>" + fmt(p.v) + "</b> · " + p.t;
     });
     svg.addEventListener("pointerleave", hide);
