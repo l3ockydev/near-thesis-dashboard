@@ -1,50 +1,50 @@
 {
-  "generatedAt": "2026-11-08T18:22:39.806Z",
+  "generatedAt": "2026-11-08T19:09:09.654Z",
   "stats": {
     "tvl": {
-      "latest": 169745511,
+      "latest": 169745260,
       "latestDate": "2026-11-08",
       "peak": 481722005,
       "peakDate": "2022-05-09",
       "first": 2376,
       "firstDate": "2021-08-20",
-      "drawdownFromPeak": 0.6476276581967644,
-      "growthSinceFirst": 71441.71338383839
+      "drawdownFromPeak": 0.647628179244168,
+      "growthSinceFirst": 71441.60774410775
     },
     "stables": {
-      "latest": 130472552.28,
+      "latest": 130475444.27,
       "latestDate": "2026-11-08",
-      "growthSinceFirst": 1.1562728433972551,
+      "growthSinceFirst": 1.1562984727686587,
       "first": 112838897,
       "firstDate": "2022-07-10"
     },
     "price": {
-      "latest": 3.6442884814898906,
+      "latest": 3.644984727484987,
       "latestDate": "2026-11-08"
     },
     "marketCap": {
-      "latest": 4778264658.427853,
+      "latest": 4779177420.808577,
       "latestDate": "2026-11-08"
     },
     "tvlToMarketCap": {
-      "latest": 0.03552451007513882,
+      "latest": 0.03551767282397338,
       "latestDate": "2026-11-08",
       "peak": 0.0649947591392236,
       "samples": 365
     },
     "momentum": {
-      "tvl90dChange": 0.8370172410169539,
-      "tvl1yChange": -0.07875319550841686,
-      "stables90dChange": 0.01899252031790888
+      "tvl90dChange": 0.83701452464864,
+      "tvl1yChange": -0.0787545577414831,
+      "stables90dChange": 0.019015106801635318
     },
-    "corrTvlPrice365d": 0.3060702176682017,
+    "corrTvlPrice365d": 0.30606838140515463,
     "corrSamples": 364,
     "chainHead": {
       "chainId": "mainnet",
-      "blockHeight": 223653382,
-      "blockTime": "2026-11-08T18:22:38.310846275Z",
+      "blockHeight": 223658149,
+      "blockTime": "2026-11-08T19:09:08.529726623Z",
       "protocolVersion": 88,
-      "fetchedAt": "2026-11-08T18:22:39.806Z"
+      "fetchedAt": "2026-11-08T19:09:09.653Z"
     }
   },
   "rows": [
@@ -9984,10 +9984,10 @@
     },
     {
       "date": "2026-11-08",
-      "tvl": 169745511,
-      "price": 3.6442884814898906,
-      "marketCap": 4778264658.427853,
-      "stables": 130472552.28
+      "tvl": 169745260,
+      "price": 3.644984727484987,
+      "marketCap": 4779177420.808577,
+      "stables": 130475444.27
     }
   ]
 }
