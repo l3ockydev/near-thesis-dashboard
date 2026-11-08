@@ -1,0 +1,13 @@
+{
+  "name": "near-thesis-dashboard",
+  "version": "1.0.0",
+  "description": "Evidence-first investment thesis on NEAR: a zero-cost, fully re-runnable onchain analytics dashboard built at NEAR HACKATHON.",
+  "type": "module",
+  "scripts": {
+    "build": "node rebuild.mjs"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
