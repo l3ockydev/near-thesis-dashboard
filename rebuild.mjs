@@ -329,7 +329,7 @@ const html = `<!doctype html>
   ${kpi(fmtCorr(s.corrTvlPrice365d), "corr(daily TVL%, daily price%), 365d (" + s.corrSamples + " samples)")}
   ${kpi(fmtRatio(s.tvlToMarketCap ? s.tvlToMarketCap.latest : null), "TVL / market cap, as of " + (s.tvlToMarketCap ? s.tvlToMarketCap.latestDate : "n/a") + " (" + (s.tvlToMarketCap ? s.tvlToMarketCap.samples : 0) + " overlap days)")}
   ${kpi("#" + s.chainHead.blockHeight.toLocaleString("en-US"), "NEAR mainnet block height (liveness)")}</div>
-<p class="meta">Chain head: ${s.chainHead.chainId}, block ${s.chainHead.blockHeight} (protocol ${s.chainHead.protocolVersion}, epoch ${s.chainHead.epoch}, latest block time ${s.chainHead.blockTime}) via public RPC rpc.mainnet.near.org, fetched ${s.chainHead.fetchedAt}. Rebuild everything with <code>node rebuild.mjs</code>. Every number above is computed from the raw JSON snapshots in <code>data/</code>. What we cannot compute from these sources is listed in THESIS.md — nothing is made up.</p>
+<p class="meta">Chain head: ${s.chainHead.chainId}, block ${s.chainHead.blockHeight} (protocol ${s.chainHead.protocolVersion}, latest block time ${s.chainHead.blockTime}) via public RPC rpc.mainnet.near.org, fetched ${s.chainHead.fetchedAt}. Rebuild everything with <code>node rebuild.mjs</code>. Every number above is computed from the raw JSON snapshots in <code>data/</code>. What we cannot compute from these sources is listed in THESIS.md — nothing is made up.</p>
 ${chartsHtml}
 <p class="src">Method, claim, counter-evidence and falsification criteria: see THESIS.md and THESIS_DATA.md in the repository.</p>
 </body></html>
